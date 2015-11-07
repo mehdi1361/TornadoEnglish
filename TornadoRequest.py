@@ -3,7 +3,7 @@ import datetime
 import logging
 import memcache
 import sys, time
-from users import *
+from tasks import *
 from tornado import websocket, web, ioloop
 
 class Caching(object):
@@ -35,20 +35,17 @@ class SignUpHandler(web.RequestHandler):
             'username': self.get_argument("username"),
             'password': self.get_argument("password"),
         }
-        # logging.debug('This message should go to the log file')
-        # sys.stdout.write(str(time.time() - aaa)+"\n")
-        # sys.stdout.write(self.request.remote_ip)
-        # sys.stdout.write(" [%s] " % datetime.datetime.now())
-        # sys.stdout.write(self.request.uri)
-        self.finish()
-
-    def on_finish(self):
-        # checkcache = Caching()
-        # s = checkcache.get(str(self._data['email']))
-        # if s is None:
-        #     checkcache.set(str(self._data['email']), self._data['username'])
-            print 'on finish'
+        logging.debug('This message should go to the log file')
+        sys.stdout.write(str(time.time() - aaa)+"\n")
+        sys.stdout.write(self.request.remote_ip)
+        sys.stdout.write(" [%s] " % datetime.datetime.now())
+        sys.stdout.write(self.request.uri)
+        try:
             sign_up(**self._data)
+            self.write('200')
+        except ValueError:
+            self.write('500')
+        self.finish()
 
 class SignInHandler(web.RequestHandler):
     @web.asynchronous
@@ -63,19 +60,14 @@ class SignInHandler(web.RequestHandler):
         sys.stdout.write(self.request.remote_ip)
         sys.stdout.write(" [%s] " % datetime.datetime.now())
         sys.stdout.write(self.request.uri)
+        self.write(sign_in(**self._data))
         self.finish()
 
-    def on_finish(self):
-        checkcache = Caching()
-        s = checkcache.get(str(self._data['email']))
-        if s is None:
-            checkcache.set(str(self._data['email']), self._data['username'])
-            s = sign_in.delay(**self._data)
-        return s
+
 app = web.Application([
     (r'/', IndexHandler),
     (r'/sign_up', SignUpHandler),
-    (r'/sign_in', SignUpHandler),
+    (r'/sign_in', SignInHandler),
 ])
 
 if __name__ == '__main__':

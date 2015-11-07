@@ -6,38 +6,35 @@ import collections
 import json
 app = Celery('tasks', broker='amqp://guest@localhost//')
 
-# @app.task()
+# @app.task(trail=True)
 def sign_up(email, username, password):
-    print 'ok'
-    db = MySQLdb.connect("127.0.0.1", "root", "13610522", "Learning_English")
-    # prepare a cursor object using cursor() method
+    db = MySQLdb.connect("127.0.0.1", "root", "1361522", "Learning_English")
     cursor = db.cursor()
-    result = cursor.execute('''INSERT INTO users(email, username, password) VALUES (%s, %s, %s);''', email, username, password)
+    result = cursor.execute('''INSERT INTO users(email, username, password) VALUES (%s, %s, %s);''', (email, username, password))
     write_to_file.delay(email, result)
     db.commit()
     db.close()
 
-@app.task()
+# @app.task()
 def sign_in(email, password):
-    db = MySQLdb.connect("localhost", "root", "13610522", "Learning_English")
-    # prepare a cursor object using cursor() method
+    db = MySQLdb.connect("localhost", "root", "1361522", "Learning_English")
     cursor = db.cursor()
     cursor.execute('''select email,password,user_id,username,image_url,score from users
-                               where email = %s and password=%s;''', email, password)
+                               where email = '%s' and password=%s limit 1;''' % (email, password))
     db.commit()
     db.close()
     rows = cursor.fetchall()
     objects_list = []
     for row in rows:
         d = collections.OrderedDict()
-        d['email'] = row.email
-        d['password'] = row.password
-        d['user_id'] = row.user_id
-        d['username'] = row.username
-        d['image_url'] = row.image_url
-        d['score'] = row.score
+        d['email'] = row[0]
+        d['password'] = row[1]
+        d['user_id'] = row[2]
+        d['username'] = row[3]
+        d['image_url'] = row[4]
+        d['score'] = row[5]
         objects_list.append(d)
-    j = json.dump(objects_list)
+    j = json.dumps(objects_list)
     return j
 @app.task
 def write_to_file(email, Result):
