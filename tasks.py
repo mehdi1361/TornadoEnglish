@@ -36,6 +36,49 @@ def sign_in(email, password):
         objects_list.append(d)
     j = json.dumps(objects_list)
     return j
+
+# @app.task()
+def db_set_level(level_title, level_description):
+    db = MySQLdb.connect("127.0.0.1", "root", "1361522", "Learning_English")
+    cursor = db.cursor()
+    result = cursor.execute('''INSERT INTO level(level_title, level_description) VALUES ('%s', '%s');'''% (level_title, level_description))
+    write_to_file.delay(level_title, result)
+    db.commit()
+    db.close()
+
+def db_get_level():
+    db = MySQLdb.connect("localhost", "root", "1361522", "Learning_English")
+    cursor = db.cursor()
+    cursor.execute('''select level_id,level_title,level_description from level;''')
+    db.commit()
+    db.close()
+    rows = cursor.fetchall()
+    objects_list = []
+    for row in rows:
+        d = collections.OrderedDict()
+        d['level_id'] = row[0]
+        d['level_title'] = row[1]
+        d['level_description'] = row[2]
+        objects_list.append(d)
+    j = json.dumps(objects_list)
+    return j
+
+def get_lesson(level_id):
+    db = MySQLdb.connect("localhost", "root", "1361522", "Learning_English")
+    cursor = db.cursor()
+    cursor.execute('''select l.lesson_id,l.lesson_title,l.lesson_description from lesson l where l.level_level_id=%s;'''% level_id)
+    db.commit()
+    db.close()
+    rows = cursor.fetchall()
+    objects_list = []
+    for row in rows:
+        d = collections.OrderedDict()
+        d['lesson_id'] = row[0]
+        d['lesson_title'] = row[1]
+        d['lesson_description'] = row[2]
+        objects_list.append(d)
+    j = json.dumps(objects_list)
+    return j
 @app.task
 def write_to_file(email, Result):
     print "Hello"

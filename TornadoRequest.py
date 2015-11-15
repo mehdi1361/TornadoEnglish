@@ -63,11 +63,45 @@ class SignInHandler(web.RequestHandler):
         self.write(sign_in(**self._data))
         self.finish()
 
+class get_level(web.RequestHandler):
+    @web.asynchronous
+    def get(self, *args):
+        aaa = time.time()
+        logging.debug('This message should go to the log file')
+        sys.stdout.write(str(time.time() - aaa)+"\n")
+        sys.stdout.write(self.request.remote_ip)
+        sys.stdout.write(" [%s] " % datetime.datetime.now())
+        sys.stdout.write(self.request.uri)
+        self.write(db_get_level())
+        self.finish()
 
+class set_level(web.RequestHandler):
+    @web.asynchronous
+    def get(self, *args):
+        aaa = time.time()
+        self._data = {
+            'level_title': self.get_argument("title"),
+            'level_description': self.get_argument("description"),
+        }
+        print self._data
+        logging.debug('This message should go to the log file')
+        sys.stdout.write(str(time.time() - aaa)+"\n")
+        sys.stdout.write(self.request.remote_ip)
+        sys.stdout.write(" [%s] " % datetime.datetime.now())
+        sys.stdout.write(self.request.uri)
+        try:
+            print 'set level'
+            db_set_level(**self._data)
+            self.write('200')
+        except ValueError:
+            self.write('500')
+        self.finish()
 app = web.Application([
     (r'/', IndexHandler),
     (r'/sign_up', SignUpHandler),
     (r'/sign_in', SignInHandler),
+    (r'/get_level', get_level),
+    (r'/set_level', set_level),
 ])
 
 if __name__ == '__main__':
