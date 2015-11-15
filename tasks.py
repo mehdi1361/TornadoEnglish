@@ -7,9 +7,13 @@ import json
 
 app = Celery('tasks', broker='amqp://guest@localhost//')
 
+host = "127.0.0.1"
+user = "root"
+password = "1361522"
+database = "Learning_English"
 # @app.task(trail=True)
 def sign_up(email, username, password):
-    db = MySQLdb.connect("127.0.0.1", "root", "13610522", "Learning_English", charset='utf8')
+    db = MySQLdb.connect(host, user, password, database, charset='utf8')
     cursor = db.cursor()
     result = cursor.execute('''INSERT INTO users(email, username, password) VALUES (%s, %s, %s);''',
                             (email, username, password))
@@ -20,7 +24,7 @@ def sign_up(email, username, password):
 
 # @app.task()
 def sign_in(email, password):
-    db = MySQLdb.connect("localhost", "root", "13610522", "Learning_English", charset='utf8')
+    db = MySQLdb.connect(host, user, password, database, charset='utf8')
     cursor = db.cursor()
     cursor.execute('''select email,password,user_id,username,image_url,score from users
                                where email = '%s' and password=%s limit 1;''' % (email, password))
@@ -43,7 +47,7 @@ def sign_in(email, password):
 
 # @app.task()
 def db_set_level(level_title, level_description):
-    db = MySQLdb.connect("127.0.0.1", "root", "13610522", "Learning_English", charset='utf8')
+    db = MySQLdb.connect(host, user, password, database, charset='utf8')
     cursor = db.cursor()
     result = cursor.execute(
         '''INSERT INTO level(level_title, level_description) VALUES ('%s', '%s');''' % (level_title, level_description))
@@ -53,7 +57,7 @@ def db_set_level(level_title, level_description):
 
 
 def db_get_level():
-    db = MySQLdb.connect("localhost", "root", "13610522", "Learning_English", charset='utf8')
+    db = MySQLdb.connect(host, user, password, database, charset='utf8')
     cursor = db.cursor()
     cursor.execute('''select level_id,level_title,level_description from level;''')
     db.commit()
@@ -70,20 +74,20 @@ def db_get_level():
     return j
 
 
-def db_set_lesson(level_title, level_description):
-    db = MySQLdb.connect("127.0.0.1", "root", "1361522", "Learning_English", charset='utf8')
+def db_set_lesson(lesson_title, lesson_description,level_level_id):
+    db = MySQLdb.connect(host, user, password, database, charset='utf8')
     cursor = db.cursor()
-    result = cursor.execute( '''INSERT INTO lesson(level_title, level_description) VALUES ('%s', '%s');''' % (level_title, level_description))
-    write_to_file.delay(level_title, result)
+    result = cursor.execute( '''INSERT INTO lesson(lesson_title, lesson_description, level_level_id)  VALUES ('%s', '%s', %s);''' % (lesson_title, lesson_description,level_level_id))
+    write_to_file.delay(lesson_title, result)
     db.commit()
     db.close()
 
 
-def db_get_lesson(level_id):
-    db = MySQLdb.connect("localhost", "root", "1361522", "Learning_English")
+def db_get_lesson(level_level_id):
+    print 'ok'
+    db = MySQLdb.connect(host, user, password, database, charset='utf8')
     cursor = db.cursor()
-    cursor.execute(
-        '''select l.lesson_id,l.lesson_title,l.lesson_description from lesson l where l.level_level_id=%s;''' % level_id)
+    cursor.execute('''select lesson_id,lesson_title,lesson_description from lesson  where level_level_id=%s;''' % level_level_id)
     db.commit()
     db.close()
     rows = cursor.fetchall()
@@ -96,6 +100,7 @@ def db_get_lesson(level_id):
         objects_list.append(d)
     j = json.dumps(objects_list)
     return j
+
 
 
 @app.task

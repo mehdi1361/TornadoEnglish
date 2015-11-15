@@ -96,12 +96,50 @@ class set_level(web.RequestHandler):
         except ValueError:
             self.write('500')
         self.finish()
+
+class set_lesson(web.RequestHandler):
+    @web.asynchronous
+    def get(self, *args):
+        aaa = time.time()
+        self._data = {
+            'lesson_title': self.get_argument("title"),
+            'lesson_description': self.get_argument("description"),
+            'level_level_id': self.get_argument("level"),
+        }
+        logging.debug('This set_lesson should go to the log file')
+        sys.stdout.write(str(time.time() - aaa)+"\n")
+        sys.stdout.write(self.request.remote_ip)
+        sys.stdout.write(" [%s] " % datetime.datetime.now())
+        sys.stdout.write(self.request.uri)
+        try:
+            db_set_lesson(**self._data)
+            self.write('200')
+        except ValueError:
+            self.write('500')
+        self.finish()
+
+class get_lesson(web.RequestHandler):
+    @web.asynchronous
+    def get(self, *args):
+        aaa = time.time()
+        self._data = {
+            'level_level_id': self.get_argument("level"),
+        }
+        logging.debug('This message should go to the log file')
+        sys.stdout.write(str(time.time() - aaa)+"\n")
+        sys.stdout.write(self.request.remote_ip)
+        sys.stdout.write(" [%s] " % datetime.datetime.now())
+        sys.stdout.write(self.request.uri)
+        self.write(db_get_lesson(**self._data))
+        self.finish()
 app = web.Application([
     (r'/', IndexHandler),
     (r'/sign_up', SignUpHandler),
     (r'/sign_in', SignInHandler),
     (r'/get_level', get_level),
     (r'/set_level', set_level),
+    (r'/set_lesson', set_lesson),
+    (r'/get_lesson', get_lesson),
 ])
 
 if __name__ == '__main__':
