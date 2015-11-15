@@ -84,7 +84,6 @@ def db_set_lesson(lesson_title, lesson_description,level_level_id):
 
 
 def db_get_lesson(level_level_id):
-    print 'ok'
     db = MySQLdb.connect(host, user, password, database, charset='utf8')
     cursor = db.cursor()
     cursor.execute('''select lesson_id,lesson_title,lesson_description from lesson  where level_level_id=%s;''' % level_level_id)
@@ -101,6 +100,22 @@ def db_get_lesson(level_level_id):
     j = json.dumps(objects_list)
     return j
 
+def db_get_question(lesson_lesson_id):
+    db = MySQLdb.connect(host, user, password, database, charset='utf8')
+    cursor = db.cursor()
+    cursor.execute('''select question_id from question where lesson_lesson_id=%s''' % lesson_lesson_id)
+    db.commit()
+    db.close()
+    rows = cursor.fetchall()
+    objects_list = []
+    for row in rows:
+        d = collections.OrderedDict()
+        d['lesson_id'] = row[0]
+        d['lesson_title'] = row[1]
+        d['lesson_description'] = row[2]
+        objects_list.append(d)
+    j = json.dumps(objects_list)
+    return j
 
 
 @app.task
