@@ -8,7 +8,7 @@ app = Celery('tasks', broker='amqp://guest@localhost//')
 
 # @app.task(trail=True)
 def sign_up(email, username, password):
-    db = MySQLdb.connect("127.0.0.1", "root", "1361522", "Learning_English")
+    db = MySQLdb.connect("127.0.0.1", "root", "13610522", "Learning_English")
     cursor = db.cursor()
     result = cursor.execute('''INSERT INTO users(email, username, password) VALUES (%s, %s, %s);''', (email, username, password))
     write_to_file.delay(email, result)
@@ -17,7 +17,7 @@ def sign_up(email, username, password):
 
 # @app.task()
 def sign_in(email, password):
-    db = MySQLdb.connect("localhost", "root", "1361522", "Learning_English")
+    db = MySQLdb.connect("localhost", "root", "13610522", "Learning_English")
     cursor = db.cursor()
     cursor.execute('''select email,password,user_id,username,image_url,score from users
                                where email = '%s' and password=%s limit 1;''' % (email, password))
@@ -39,7 +39,7 @@ def sign_in(email, password):
 
 # @app.task()
 def db_set_level(level_title, level_description):
-    db = MySQLdb.connect("127.0.0.1", "root", "1361522", "Learning_English")
+    db = MySQLdb.connect("127.0.0.1", "root", "13610522", "Learning_English")
     cursor = db.cursor()
     result = cursor.execute('''INSERT INTO level(level_title, level_description) VALUES ('%s', '%s');'''% (level_title, level_description))
     write_to_file.delay(level_title, result)
@@ -47,7 +47,7 @@ def db_set_level(level_title, level_description):
     db.close()
 
 def db_get_level():
-    db = MySQLdb.connect("localhost", "root", "1361522", "Learning_English")
+    db = MySQLdb.connect("localhost", "root", "13610522", "Learning_English")
     cursor = db.cursor()
     cursor.execute('''select level_id,level_title,level_description from level;''')
     db.commit()
