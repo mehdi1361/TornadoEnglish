@@ -43,7 +43,7 @@ def sign_in(email, password):
 
 # @app.task()
 def db_set_level(level_title, level_description):
-    db = MySQLdb.connect("127.0.0.1", "root", "1361522", "Learning_English", charset='utf8')
+    db = MySQLdb.connect("127.0.0.1", "root", "13610522", "Learning_English", charset='utf8')
     cursor = db.cursor()
     result = cursor.execute(
         '''INSERT INTO level(level_title, level_description) VALUES ('%s', '%s');''' % (level_title, level_description))
