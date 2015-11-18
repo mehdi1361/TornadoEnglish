@@ -105,7 +105,7 @@ def db_get_lesson(level_level_id):
 def db_get_questions(lesson_lesson_id):
     db = MySQLdb.connect("127.0.0.1", "root", '13610522', 'Learning_English', charset='utf8')
     cursor = db.cursor()
-    cursor.execute('''select question_id,question_title,question_description,question_time,question_expireStart,question_expireEnd,score,question_kind from question where lesson_lesson_id=%s''' % lesson_lesson_id)
+    cursor.execute('''select question_id,question_title,question_description,question_time,question_expireStart,question_expireEnd,score,question_kind,correct_answer from question where lesson_lesson_id=%s''' % lesson_lesson_id)
     db.commit()
     db.close()
     rows = cursor.fetchall()
@@ -117,6 +117,7 @@ def db_get_questions(lesson_lesson_id):
         d['question_description'] = row[2]
         d['score'] = row[6]
         d['question_kind'] = row[7]
+        d['correct_answer'] = row[8]
         objects_list.append(d)
     j = json.dumps(objects_list)
     return j
