@@ -115,9 +115,6 @@ def db_get_questions(lesson_lesson_id):
         d['question_id'] = row[0]
         d['question_title'] = row[1]
         d['question_description'] = row[2]
-        d['question_time'] = row[3]
-        d['question_expireStart'] = row[4]
-        d['question_expireEnd'] = row[5]
         d['score'] = row[6]
         d['question_kind'] = row[7]
         objects_list.append(d)
