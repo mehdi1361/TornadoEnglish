@@ -132,6 +132,37 @@ class get_lesson(web.RequestHandler):
         sys.stdout.write(self.request.uri)
         self.write(db_get_lesson(**self._data))
         self.finish()
+
+class get_questions(web.RequestHandler):
+    @web.asynchronous
+    def get(self, *args):
+        aaa = time.time()
+        self._data = {
+            'lesson_lesson_id': self.get_argument("lesson"),
+        }
+        logging.debug('This message should go to the log file')
+        sys.stdout.write(str(time.time() - aaa)+"\n")
+        sys.stdout.write(self.request.remote_ip)
+        sys.stdout.write(" [%s] " % datetime.datetime.now())
+        sys.stdout.write(self.request.uri)
+        self.write(db_get_questions(**self._data))
+        self.finish()
+
+class get_question(web.RequestHandler):
+    @web.asynchronous
+    def get(self, *args):
+        aaa = time.time()
+        self._data = {
+            'question_id': self.get_argument("level"),
+        }
+        logging.debug('This message should go to the log file')
+        sys.stdout.write(str(time.time() - aaa)+"\n")
+        sys.stdout.write(self.request.remote_ip)
+        sys.stdout.write(" [%s] " % datetime.datetime.now())
+        sys.stdout.write(self.request.uri)
+        self.write(db_get_questions(**self._data))
+        self.finish()
+
 app = web.Application([
     (r'/', IndexHandler),
     (r'/sign_up', SignUpHandler),
@@ -139,7 +170,7 @@ app = web.Application([
     (r'/get_level', get_level),
     (r'/set_level', set_level),
     (r'/set_lesson', set_lesson),
-    (r'/get_lesson', get_lesson),
+    (r'/get_questions', get_questions),
 ])
 
 if __name__ == '__main__':

@@ -5,15 +5,17 @@ import datetime
 import collections
 import json
 
+from celery import group
+
 app = Celery('tasks', broker='amqp://guest@localhost//')
 
-host = "127.0.0.1"
-user = "root"
-password = "1361522"
-database = "Learning_English"
-# @app.task(trail=True)
+# host = "127.0.0.1"
+# user = "root"
+# password = 1361522
+# database = 'Learning_English'
+# @app.task()
 def sign_up(email, username, password):
-    db = MySQLdb.connect(host, user, password, database, charset='utf8')
+    db = MySQLdb.connect("127.0.0.1", "root", '13610522', 'Learning_English', charset='utf8')
     cursor = db.cursor()
     result = cursor.execute('''INSERT INTO users(email, username, password) VALUES (%s, %s, %s);''',
                             (email, username, password))
@@ -24,7 +26,7 @@ def sign_up(email, username, password):
 
 # @app.task()
 def sign_in(email, password):
-    db = MySQLdb.connect(host, user, password, database, charset='utf8')
+    db = MySQLdb.connect("127.0.0.1", "root", '13610522', 'Learning_English', charset='utf8')
     cursor = db.cursor()
     cursor.execute('''select email,password,user_id,username,image_url,score from users
                                where email = '%s' and password=%s limit 1;''' % (email, password))
@@ -47,7 +49,7 @@ def sign_in(email, password):
 
 # @app.task()
 def db_set_level(level_title, level_description):
-    db = MySQLdb.connect(host, user, password, database, charset='utf8')
+    db = MySQLdb.connect("127.0.0.1", "root", '13610522', 'Learning_English', charset='utf8')
     cursor = db.cursor()
     result = cursor.execute(
         '''INSERT INTO level(level_title, level_description) VALUES ('%s', '%s');''' % (level_title, level_description))
@@ -57,7 +59,7 @@ def db_set_level(level_title, level_description):
 
 
 def db_get_level():
-    db = MySQLdb.connect(host, user, password, database, charset='utf8')
+    db = MySQLdb.connect("127.0.0.1", "root", '13610522', 'Learning_English', charset='utf8')
     cursor = db.cursor()
     cursor.execute('''select level_id,level_title,level_description from level;''')
     db.commit()
@@ -75,7 +77,7 @@ def db_get_level():
 
 
 def db_set_lesson(lesson_title, lesson_description,level_level_id):
-    db = MySQLdb.connect(host, user, password, database, charset='utf8')
+    db = MySQLdb.connect("127.0.0.1", "root", '13610522', 'Learning_English', charset='utf8')
     cursor = db.cursor()
     result = cursor.execute( '''INSERT INTO lesson(lesson_title, lesson_description, level_level_id)  VALUES ('%s', '%s', %s);''' % (lesson_title, lesson_description,level_level_id))
     write_to_file.delay(lesson_title, result)
@@ -84,7 +86,7 @@ def db_set_lesson(lesson_title, lesson_description,level_level_id):
 
 
 def db_get_lesson(level_level_id):
-    db = MySQLdb.connect(host, user, password, database, charset='utf8')
+    db = MySQLdb.connect("127.0.0.1", "root", '13610522', 'Learning_English', charset='utf8')
     cursor = db.cursor()
     cursor.execute('''select lesson_id,lesson_title,lesson_description from lesson  where level_level_id=%s;''' % level_level_id)
     db.commit()
@@ -100,24 +102,46 @@ def db_get_lesson(level_level_id):
     j = json.dumps(objects_list)
     return j
 
-def db_get_question(lesson_lesson_id):
-    db = MySQLdb.connect(host, user, password, database, charset='utf8')
+def db_get_questions(lesson_lesson_id):
+    db = MySQLdb.connect("127.0.0.1", "root", '13610522', 'Learning_English', charset='utf8')
     cursor = db.cursor()
-    cursor.execute('''select question_id from question where lesson_lesson_id=%s''' % lesson_lesson_id)
+    cursor.execute('''select question_id,question_title,question_description,question_time,question_expireStart,question_expireEnd,score,question_kind from question where lesson_lesson_id=%s''' % lesson_lesson_id)
     db.commit()
     db.close()
     rows = cursor.fetchall()
     objects_list = []
     for row in rows:
         d = collections.OrderedDict()
-        d['lesson_id'] = row[0]
-        d['lesson_title'] = row[1]
-        d['lesson_description'] = row[2]
+        d['question_id'] = row[0]
+        d['question_title'] = row[1]
+        d['question_description'] = row[2]
+        d['question_time'] = row[3]
+        d['question_expireStart'] = row[4]
+        d['question_expireEnd'] = row[5]
+        d['score'] = row[6]
+        d['question_kind'] = row[7]
         objects_list.append(d)
     j = json.dumps(objects_list)
     return j
 
+def db_set_question(question_title, question_description, question_time, question_expireStart, question_expireEnd, score, question_type_idquestion_type, lesson_lesson_id, question_kind):
+    db = MySQLdb.connect("127.0.0.1", "root", 1361522, 'Learning_English', charset='utf8')
+    cursor = db.cursor()
+    result = cursor.execute('''insert into question(question_title, question_description, question_time, question_expireStart, question_expireEnd, score, question_type_idquestion_type, lesson_lesson_id, question_kind) VALUES ('%s','%s',%s,%s,%s,%s,%s,%s,%s,%s)''' % (question_title, question_description, question_time, question_expireStart, question_expireEnd, score, question_type_idquestion_type, lesson_lesson_id, question_kind))
+    # write_to_file.delay(lesson_title, result)
+    db.commit()
+    db.close()
 
+@app.task(trail=True)
+def A(how_many):
+    return group(B.s(i) for i in range(how_many))()
+@app.task(trail=True)
+def B(i):
+    return pow2.delay(i)
+
+@app.task(trail=True)
+def pow2(i):
+    return i ** 2
 @app.task
 def write_to_file(email, Result):
     print "Hello"
